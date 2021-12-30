@@ -28,6 +28,7 @@ type checkWord struct{}
 
 type model struct {
 	textInput      textinput.Model
+	textComplete   bool
 	uncoveredText  string
 	remainingWords []string
 	typed          string
@@ -65,6 +66,9 @@ func (m *model) checkTypedText() {
 		m.uncoveredText = m.uncoveredText + " " + m.remainingWords[0]
 		m.remainingWords = m.remainingWords[1:]
 	}
+	if len(m.remainingWords) == 0 {
+		m.textComplete = true
+	}
 	m.typed = m.textInput.Value()
 	m.textInput.Reset()
 
@@ -92,8 +96,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	return fmt.Sprintf("Start typing: \n>%s\n\n\n\nTyped:%s\n%s\n\n%s",
+	statusMsg := fmt.Sprintf("%v words remaining", len(m.remainingWords))
+	return fmt.Sprintf("Start typing: \n>%s\n\n%s\nTyped:%s\n%s\n%s",
 		m.uncoveredText,
-		m.typed, m.textInput.View(),
+		statusMsg,
+		m.typed,
+		m.textInput.View(),
 		"(esc to quit)") + "\n"
 }
