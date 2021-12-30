@@ -94,6 +94,13 @@ func (m model) enterPressedCmd(enteredText string) tea.Cmd {
 	return m.startGameCmd(enteredNumber)
 }
 
+func (m *model) escPressedCommand() tea.Cmd {
+	if m.isPlayingGame {
+		return m.showGameSelectorCmd()
+	}
+	return tea.Quit
+}
+
 func (m *model) showGameSelectorCmd() tea.Cmd {
 	return func() tea.Msg {
 		return showGameSelectorMsg{}
@@ -102,6 +109,7 @@ func (m *model) showGameSelectorCmd() tea.Cmd {
 
 func (m *model) handleShowGameSelectorMsg() {
 	m.textInput.Reset()
+	m.typed = ""
 	m.isPlayingGame = false
 }
 
@@ -146,7 +154,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.showGameSelectorCmd()
 		}
 		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyEsc:
+		case tea.KeyEsc:
+			return m, m.escPressedCommand()
+		case tea.KeyCtrlC:
 			return m, tea.Quit
 		case tea.KeyEnter:
 			return m, m.enterPressedCmd(m.textInput.Value())
@@ -190,7 +200,7 @@ func (m model) gameScreen() string {
 		statusMsg,
 		m.typed,
 		m.textInput.View(),
-		"(esc to quit)") + "\n"
+		"(esc to cancel)") + "\n"
 
 }
 
