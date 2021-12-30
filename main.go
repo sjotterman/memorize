@@ -27,6 +27,7 @@ type startGameMsg struct {
 	text string
 }
 type clearInputMsg struct{}
+type showGameSelectorMsg struct{}
 
 type memorizeItem struct {
 	title string
@@ -47,7 +48,7 @@ var memorizeItems []memorizeItem = []memorizeItem{
 type model struct {
 	textInput      textinput.Model
 	textComplete   bool
-	isTyping       bool
+	isPlayingGame  bool
 	uncoveredText  string
 	remainingWords []string
 	typed          string
@@ -61,9 +62,9 @@ func initialModel() model {
 	ti.CharLimit = 156
 	ti.Width = 20
 	return model{
-		textInput: ti,
-		isTyping:  false,
-		err:       nil,
+		textInput:     ti,
+		isPlayingGame: false,
+		err:           nil,
 	}
 }
 
@@ -79,7 +80,7 @@ func (m *model) handleStartGameMsg(msg startGameMsg) {
 	m.textInput.Reset()
 	m.uncoveredText = ""
 	m.remainingWords = strings.Split(msg.text, " ")
-	m.isTyping = true
+	m.isPlayingGame = true
 	m.textComplete = false
 }
 
@@ -91,6 +92,17 @@ func (m model) enterPressedCmd(enteredText string) tea.Cmd {
 		}
 	}
 	return m.startGameCmd(enteredNumber)
+}
+
+func (m *model) showGameSelectorCmd() tea.Cmd {
+	return func() tea.Msg {
+		return showGameSelectorMsg{}
+	}
+}
+
+func (m *model) handleShowGameSelectorMsg() {
+	m.textInput.Reset()
+	m.isPlayingGame = false
 }
 
 func (m *model) handleClearInputMsg() {
@@ -116,7 +128,6 @@ func (m *model) checkTypedText() {
 	}
 	if len(m.remainingWords) == 0 {
 		m.textComplete = true
-		m.isTyping = false
 	}
 	m.typed = m.textInput.Value()
 	m.textInput.Reset()
@@ -131,8 +142,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.checkTypedText()
 			return m, nil
 		}
-		if !m.isTyping && msg.String() == "s" {
-			return m, m.startGameCmd(1)
+		if m.textComplete && msg.String() == "s" {
+			return m, m.showGameSelectorCmd()
 		}
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -149,6 +160,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case clearInputMsg:
 		m.handleClearInputMsg()
+		return m, nil
+	case showGameSelectorMsg:
+		m.handleShowGameSelectorMsg()
 		return m, nil
 	}
 	m.textInput, cmd = m.textInput.Update(msg)
@@ -167,12 +181,12 @@ func (m model) gameSelector() string {
 }
 
 func (m model) View() string {
-	if !m.isTyping {
+	if !m.isPlayingGame {
 		return m.gameSelector()
 	}
 	statusMsg := fmt.Sprintf("%v words remaining", len(m.remainingWords))
 	if len(m.remainingWords) == 0 {
-		statusMsg = "Complete! Press s to try again."
+		statusMsg = "Complete! Press s to select text."
 	}
 	return fmt.Sprintf("Start typing: \n>%s\n\n%s\nTyped:%s\n%s\n%s",
 		m.uncoveredText,
