@@ -25,10 +25,14 @@ const targetText string = "These are the times that try men's souls."
 type tickMsg struct{}
 type errMsg error
 type checkWord struct{}
+type startGameMsg struct {
+	text string
+}
 
 type model struct {
 	textInput      textinput.Model
 	textComplete   bool
+	isTyping       bool
 	uncoveredText  string
 	remainingWords []string
 	typed          string
@@ -44,9 +48,26 @@ func initialModel() model {
 	remainingWords := strings.Split(targetText, " ")
 	return model{
 		textInput:      ti,
+		isTyping:       true,
 		remainingWords: remainingWords,
 		err:            nil,
 	}
+}
+
+func (m model) startGameCmd() tea.Cmd {
+	log.Println("startGameCmd")
+	newText := targetText
+	return func() tea.Msg {
+		return startGameMsg{text: newText}
+	}
+}
+
+func (m *model) handleStartGameMsg(msg startGameMsg) {
+	m.textInput.Reset()
+	m.uncoveredText = ""
+	m.remainingWords = strings.Split(msg.text, " ")
+	m.isTyping = true
+	m.textComplete = false
 }
 
 func (m model) Init() tea.Cmd {
@@ -68,6 +89,7 @@ func (m *model) checkTypedText() {
 	}
 	if len(m.remainingWords) == 0 {
 		m.textComplete = true
+		m.isTyping = false
 	}
 	m.typed = m.textInput.Value()
 	m.textInput.Reset()
@@ -82,6 +104,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.checkTypedText()
 			return m, nil
 		}
+		if !m.isTyping && msg.String() == "s" {
+			return m, m.startGameCmd()
+		}
 		switch msg.Type {
 		case tea.KeyEnter, tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
@@ -90,6 +115,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case errMsg:
 		m.err = msg
 		return m, nil
+	case startGameMsg:
+		m.handleStartGameMsg(msg)
+		return m, nil
 	}
 	m.textInput, cmd = m.textInput.Update(msg)
 	return m, cmd
@@ -97,6 +125,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	statusMsg := fmt.Sprintf("%v words remaining", len(m.remainingWords))
+	if len(m.remainingWords) == 0 {
+		statusMsg = "Complete! Press s to try again."
+	}
 	return fmt.Sprintf("Start typing: \n>%s\n\n%s\nTyped:%s\n%s\n%s",
 		m.uncoveredText,
 		statusMsg,
