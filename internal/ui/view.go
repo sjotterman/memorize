@@ -10,14 +10,34 @@ const totalHeight = 30
 const totalWidth = 60
 
 func (m model) gameSelector() string {
-	gameSelectorText := "Select a text:\n\n"
-	for index, item := range m.memorizeItems {
-		gameSelectorText += fmt.Sprintf("%v. %v\n", index, item.title)
-	}
+	remainingHeight := totalHeight
 
-	gameSelectorText += m.textInput.View()
-	gameSelectorText += "\n(esc to quit)\n"
-	return gameSelectorText
+	titleTextHeight := 2
+	remainingHeight -= titleTextHeight
+	titleText := "Select a text"
+	styledTitleText := lipgloss.NewStyle().Height(titleTextHeight).Render(titleText)
+
+	textInputHeight := 1
+	remainingHeight -= textInputHeight
+	styledTextInput := lipgloss.NewStyle().Height(textInputHeight).Render(m.textInput.View())
+
+	helpTextHeight := 1
+	remainingHeight -= helpTextHeight
+	helpText := "(esc to quit)"
+	styledHelpText := lipgloss.NewStyle().Height(helpTextHeight).Render(helpText)
+
+	listText := ""
+	for index, item := range m.memorizeItems {
+		listText += fmt.Sprintf("%v. %v\n", index, item.title)
+	}
+	listTextHeight := remainingHeight
+	styledListText := lipgloss.NewStyle().Height(listTextHeight).Render(listText)
+
+	return lipgloss.JoinVertical(lipgloss.Left,
+		styledTitleText,
+		styledListText,
+		styledTextInput,
+		styledHelpText)
 }
 
 func (m model) showTypedWord() string {
