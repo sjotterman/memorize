@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -19,14 +20,28 @@ func main() {
 	}
 }
 
-// TODO: remove hardcoded text
-const targetText string = "These are the times that try men's souls."
-
 type tickMsg struct{}
 type errMsg error
 type checkWord struct{}
 type startGameMsg struct {
 	text string
+}
+type clearInputMsg struct{}
+
+type memorizeItem struct {
+	title string
+	text  string
+}
+
+var memorizeItems []memorizeItem = []memorizeItem{
+	{
+		title: "Opening, The Crisis",
+		text:  "These are the times that try men's souls.",
+	},
+	{
+		title: "Hitchhiker's Guide Cover Text",
+		text:  "Don't Panic",
+	},
 }
 
 type model struct {
@@ -45,18 +60,16 @@ func initialModel() model {
 	ti.Focus()
 	ti.CharLimit = 156
 	ti.Width = 20
-	remainingWords := strings.Split(targetText, " ")
 	return model{
-		textInput:      ti,
-		isTyping:       true,
-		remainingWords: remainingWords,
-		err:            nil,
+		textInput: ti,
+		isTyping:  false,
+		err:       nil,
 	}
 }
 
-func (m model) startGameCmd() tea.Cmd {
+func (m model) startGameCmd(gameIndex int) tea.Cmd {
 	log.Println("startGameCmd")
-	newText := targetText
+	newText := memorizeItems[gameIndex].text
 	return func() tea.Msg {
 		return startGameMsg{text: newText}
 	}
@@ -68,6 +81,20 @@ func (m *model) handleStartGameMsg(msg startGameMsg) {
 	m.remainingWords = strings.Split(msg.text, " ")
 	m.isTyping = true
 	m.textComplete = false
+}
+
+func (m model) enterPressedCmd(enteredText string) tea.Cmd {
+	enteredNumber, err := strconv.Atoi(enteredText)
+	if err != nil || enteredNumber > len(memorizeItems)-1 {
+		return func() tea.Msg {
+			return clearInputMsg{}
+		}
+	}
+	return m.startGameCmd(enteredNumber)
+}
+
+func (m *model) handleClearInputMsg() {
+	m.textInput.Reset()
 }
 
 func (m model) Init() tea.Cmd {
@@ -105,11 +132,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		if !m.isTyping && msg.String() == "s" {
-			return m, m.startGameCmd()
+			return m, m.startGameCmd(1)
 		}
 		switch msg.Type {
-		case tea.KeyEnter, tea.KeyCtrlC, tea.KeyEsc:
+		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
+		case tea.KeyEnter:
+			return m, m.enterPressedCmd(m.textInput.Value())
 		}
 
 	case errMsg:
@@ -118,12 +147,29 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case startGameMsg:
 		m.handleStartGameMsg(msg)
 		return m, nil
+	case clearInputMsg:
+		m.handleClearInputMsg()
+		return m, nil
 	}
 	m.textInput, cmd = m.textInput.Update(msg)
 	return m, cmd
 }
 
+func (m model) gameSelector() string {
+	gameSelectorText := "Select a text:\n\n"
+	for index, item := range memorizeItems {
+		gameSelectorText += fmt.Sprintf("%v. %v\n", index, item.title)
+	}
+
+	gameSelectorText += m.textInput.View()
+	gameSelectorText += "\n(esc to quit)\n"
+	return gameSelectorText
+}
+
 func (m model) View() string {
+	if !m.isTyping {
+		return m.gameSelector()
+	}
 	statusMsg := fmt.Sprintf("%v words remaining", len(m.remainingWords))
 	if len(m.remainingWords) == 0 {
 		statusMsg = "Complete! Press s to try again."
