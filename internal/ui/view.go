@@ -2,6 +2,8 @@ package ui
 
 import (
 	"fmt"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/charmbracelet/lipgloss"
 )
@@ -79,11 +81,24 @@ func (m model) gameScreen() string {
 	helpText := "(esc to cancel)"
 	styledHelpText := lipgloss.NewStyle().Height(helpTextHeight).Render(helpText)
 
-	uncoveredTextHeight := remainingHeight // needs to be variable
-	uncoveredText := lipgloss.NewStyle().Height(uncoveredTextHeight).Render(m.uncoveredText)
-	remainingHeight -= uncoveredTextHeight
+	var remainingWordBlanks []string
+	for _, word := range m.remainingWords {
+		length := utf8.RuneCountInString(word)
+		blank := strings.Repeat("_", length)
+		remainingWordBlanks = append(remainingWordBlanks, blank)
+	}
+	coveredWords := strings.Join(remainingWordBlanks, " ")
+	paragraphHeight := remainingHeight
+	displayedText := m.uncoveredText
+	if m.uncoveredText != "" {
+		displayedText += " "
+	}
+
+	displayedText += lipgloss.NewStyle().Foreground(lipgloss.Color("#999999")).Render(coveredWords)
+	styledDisplayText := lipgloss.NewStyle().Height(paragraphHeight).Render(displayedText)
+	remainingHeight -= paragraphHeight
 	return lipgloss.JoinVertical(lipgloss.Left,
-		uncoveredText,
+		styledDisplayText,
 		styledStatusMsg,
 		styledTypedWord,
 		styledTextInput,
