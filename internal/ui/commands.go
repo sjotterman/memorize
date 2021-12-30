@@ -13,7 +13,7 @@ func (m model) startGameCmd(gameIndex int) tea.Cmd {
 	}
 }
 
-func (m model) enterPressedCmd(enteredText string) tea.Cmd {
+func (m *model) enterPressedCmd(enteredText string) tea.Cmd {
 	enteredNumber, err := strconv.Atoi(enteredText)
 	if err != nil || enteredNumber > len(memorizeItems)-1 {
 		return func() tea.Msg {

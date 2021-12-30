@@ -48,8 +48,13 @@ func (m model) gameScreen() string {
 }
 
 func (m model) View() string {
+	docStyle := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("#FF00FF")).
+		Height(30).
+		Width(60)
 	if !m.isPlayingGame {
-		return m.gameSelector()
+		return docStyle.Render(m.gameSelector())
 	}
-	return m.gameScreen()
+	return docStyle.Render(m.gameScreen())
 }

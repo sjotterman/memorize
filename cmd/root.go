@@ -60,6 +60,7 @@ var rootCmd = &cobra.Command{
 		m := ui.InitialModel()
 		var opts []tea.ProgramOption
 
+		opts = append(opts, tea.WithAltScreen())
 
 		p := tea.NewProgram(m, opts...)
 		if err := p.Start(); err != nil {
