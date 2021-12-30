@@ -180,10 +180,7 @@ func (m model) gameSelector() string {
 	return gameSelectorText
 }
 
-func (m model) View() string {
-	if !m.isPlayingGame {
-		return m.gameSelector()
-	}
+func (m model) gameScreen() string {
 	statusMsg := fmt.Sprintf("%v words remaining", len(m.remainingWords))
 	if len(m.remainingWords) == 0 {
 		statusMsg = "Complete! Press s to select text."
@@ -194,4 +191,12 @@ func (m model) View() string {
 		m.typed,
 		m.textInput.View(),
 		"(esc to quit)") + "\n"
+
+}
+
+func (m model) View() string {
+	if !m.isPlayingGame {
+		return m.gameSelector()
+	}
+	return m.gameScreen()
 }
