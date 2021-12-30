@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 )
 
-
 var memorizeItems []memorizeItem = []memorizeItem{
 	{
 		title: "Opening, The Crisis",
@@ -21,14 +20,15 @@ var memorizeItems []memorizeItem = []memorizeItem{
 }
 
 type model struct {
-	textInput      textinput.Model
-	textComplete   bool
-	isPlayingGame  bool
-	memorizeItems  []memorizeItem
-	uncoveredText  string
-	remainingWords []string
-	typed          string
-	err            error
+	textInput          textinput.Model
+	textComplete       bool
+	isPlayingGame      bool
+	memorizeItems      []memorizeItem
+	uncoveredText      string
+	remainingWords     []string
+	typed              string
+	isTypedWordCorrect bool
+	err                error
 }
 
 func InitialModel() model {
@@ -55,8 +55,11 @@ func (m *model) checkTypedText() {
 	targetWord := normalizeWord(m.remainingWords[0])
 	typedWord := normalizeWord(m.textInput.Value())
 	if targetWord == typedWord {
+		m.isTypedWordCorrect = true
 		m.uncoveredText = m.uncoveredText + " " + m.remainingWords[0]
 		m.remainingWords = m.remainingWords[1:]
+	} else {
+		m.isTypedWordCorrect = false
 	}
 	log.Printf("remainingWords: %v\n", m.remainingWords)
 	if len(m.remainingWords) == 0 {
@@ -64,5 +67,4 @@ func (m *model) checkTypedText() {
 	}
 	m.typed = m.textInput.Value()
 	m.textInput.Reset()
-
 }
