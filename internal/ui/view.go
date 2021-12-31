@@ -27,11 +27,6 @@ func (m model) getSelectorTitle(height int) string {
 }
 
 func (m model) getSelectorDisplayText(height int) string {
-	if m.err != nil {
-		errorText := fmt.Sprintf("%v", m.err)
-		styledErrorText := lipgloss.NewStyle().Height(height).Render(errorText)
-		return styledErrorText
-	}
 	mainDisplayText := ""
 	for index, item := range m.memorizeItems {
 		mainDisplayText += fmt.Sprintf("%v. %v\n", index, item.Title)
@@ -47,6 +42,60 @@ func (m model) gameSelector() string {
 	remainingHeight -= titleTextHeight
 	styledTitleText := m.getSelectorTitle(titleTextHeight)
 
+	errorMsgHeight := 2
+	remainingHeight -= errorMsgHeight
+	styledErrorText := m.getErrorText(errorMsgHeight)
+
+	textInputHeight := 1
+	remainingHeight -= textInputHeight
+	styledTextInput := lipgloss.NewStyle().Height(textInputHeight).Render(m.textInput.View())
+
+	helpTextHeight := 1
+	remainingHeight -= helpTextHeight
+	helpText := "(esc to quit, d to select difficulty)"
+	styledHelpText := lipgloss.NewStyle().Height(helpTextHeight).Render(helpText)
+
+	listTextHeight := remainingHeight
+
+	mainDisplayText := m.getSelectorDisplayText(listTextHeight)
+	return lipgloss.JoinVertical(lipgloss.Left,
+		styledTitleText,
+		mainDisplayText,
+		styledErrorText,
+		styledTextInput,
+		styledHelpText)
+}
+
+func (m model) getDifficultySelectorDisplayText(height int) string {
+	mainDisplayText := ""
+	for i := 0; i <= int(difficultyHard); i++ {
+		mainDisplayText += fmt.Sprintf("%v. %v\n", i, gameDifficulty(i).String())
+	}
+	styledListText := lipgloss.NewStyle().Height(height).Render(mainDisplayText)
+	return styledListText
+}
+
+func (m model) getErrorText(height int) string {
+	errorText := ""
+	if m.err != nil {
+		errorText = fmt.Sprintf("Error: %v", m.err)
+	}
+	styledErrorText := lipgloss.NewStyle().Height(height).
+		Render(errorText)
+	return styledErrorText
+}
+
+func (m model) difficultySelector() string {
+	remainingHeight := totalHeight
+
+	titleTextHeight := 2
+	remainingHeight -= titleTextHeight
+	styledTitleText := "Select a difficulty"
+
+	errorMsgHeight := 1
+	remainingHeight -= errorMsgHeight
+	styledErrorText := m.getErrorText(errorMsgHeight)
+
 	textInputHeight := 1
 	remainingHeight -= textInputHeight
 	styledTextInput := lipgloss.NewStyle().Height(textInputHeight).Render(m.textInput.View())
@@ -58,10 +107,11 @@ func (m model) gameSelector() string {
 
 	listTextHeight := remainingHeight
 
-	mainDisplayText := m.getSelectorDisplayText(listTextHeight)
+	mainDisplayText := m.getDifficultySelectorDisplayText(listTextHeight)
 	return lipgloss.JoinVertical(lipgloss.Left,
 		styledTitleText,
 		mainDisplayText,
+		styledErrorText,
 		styledTextInput,
 		styledHelpText)
 }
@@ -125,21 +175,21 @@ func (m model) getGameStatusMsg(statusMsgHeight int) string {
 
 // getWordBlank takes a string and a difficulty level, and returns a partially
 // or fully blanked out string to display as a hint
-func getWordBlank(word string, difficulty int) string {
+func getWordBlank(word string, difficulty gameDifficulty) string {
 	length := utf8.RuneCountInString(word)
-	if difficulty == 4 {
+	if difficulty == difficultyHard {
 		blank := strings.Repeat("_", length)
 		return blank
 	}
-	if difficulty == 1 {
+	if difficulty == difficultyLearning {
 		return word
 	}
 	var numLettersToShow int = 0
-	if difficulty == 3 {
+	if difficulty == difficultyMedium {
 		numLettersToShow = 1
 	}
 	letters := []rune(word)
-	if difficulty == 2 {
+	if difficulty == difficultyEasy {
 		numLettersToShow = int(math.Ceil(float64(length) / 2.0))
 	}
 	var runes []rune
@@ -153,7 +203,7 @@ func getWordBlank(word string, difficulty int) string {
 	return string(runes)
 }
 
-func (m model) getCoveredWords(difficulty int) string {
+func (m model) getCoveredWords(difficulty gameDifficulty) string {
 	var remainingWordBlanks []string
 	for _, word := range m.remainingWords {
 		blank := getWordBlank(word, difficulty)
@@ -219,8 +269,11 @@ func (m model) View() string {
 		BorderForeground(lipgloss.Color("#FF00FF")).
 		Height(totalHeight).
 		Width(totalWidth)
-	if !m.isPlayingGame {
+	if m.currentScreen == selectionScreen {
 		return docStyle.Render(m.gameSelector())
+	}
+	if m.currentScreen == selectDifficultyScreen {
+		return docStyle.Render(m.difficultySelector())
 	}
 	return docStyle.Render(m.gameScreen())
 }

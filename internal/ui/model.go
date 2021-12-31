@@ -10,8 +10,8 @@ import (
 type model struct {
 	textInput          textinput.Model
 	textComplete       bool
-	isPlayingGame      bool
-	selectedDifficulty int
+	selectedDifficulty gameDifficulty
+	currentScreen      gameScreen
 	memorizeItems      []memorizeItem
 	uncoveredText      string
 	remainingWords     []string
@@ -28,8 +28,8 @@ func InitialModel() model {
 	ti.Width = 20
 	return model{
 		textInput: ti,
-		selectedDifficulty: 3,
-		isPlayingGame:      false,
+		selectedDifficulty: difficultyHard,
+		currentScreen:      selectionScreen,
 		err:                nil,
 	}
 }
