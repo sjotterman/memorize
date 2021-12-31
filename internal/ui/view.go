@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"strings"
 	"unicode/utf8"
@@ -14,7 +15,8 @@ const totalHeight = 30
 const totalWidth = 65
 
 func (m model) getSelectorTitle(height int) string {
-	titleText := "Select a text"
+	titleText := "Select a text\n"
+	titleText = fmt.Sprintf("%v\nSelected difficulty: %v", titleText, m.selectedDifficulty)
 	styledTitleText := lipgloss.NewStyle().Height(height).Render(titleText)
 	if m.err != nil {
 		styledTitleText = lipgloss.NewStyle().
@@ -83,7 +85,6 @@ func (m model) showTypedWord() string {
 
 func (m model) numTypedWords() int {
 	re := regexp.MustCompile(`[\s]+`)
-	// m.remainingWords = re.Split(msg.text, -1)
 	progressWords := re.Split(m.uncoveredText, -1)
 	typedWordCount := len(progressWords) - 1
 	return typedWordCount
@@ -122,6 +123,59 @@ func (m model) getGameStatusMsg(statusMsgHeight int) string {
 	return styledStatusMsg
 }
 
+// getWordBlank takes a string and a difficulty level, and returns a partially
+// or fully blanked out string to display as a hint
+func getWordBlank(word string, difficulty int) string {
+	length := utf8.RuneCountInString(word)
+	if difficulty == 4 {
+		blank := strings.Repeat("_", length)
+		return blank
+	}
+	if difficulty == 1 {
+		return word
+	}
+	var numLettersToShow int = 0
+	if difficulty == 3 {
+		numLettersToShow = 1
+	}
+	letters := []rune(word)
+	if difficulty == 2 {
+		numLettersToShow = int(math.Ceil(float64(length) / 2.0))
+	}
+	var runes []rune
+	for i := 0; i < len(letters); i++ {
+		if i < numLettersToShow {
+			runes = append(runes, letters[i])
+		} else {
+			runes = append(runes, '_')
+		}
+	}
+	return string(runes)
+}
+
+func (m model) getCoveredWords(difficulty int) string {
+	var remainingWordBlanks []string
+	for _, word := range m.remainingWords {
+		blank := getWordBlank(word, difficulty)
+		remainingWordBlanks = append(remainingWordBlanks, blank)
+	}
+	coveredWords := strings.Join(remainingWordBlanks, " ")
+	return coveredWords
+}
+
+func (m model) getGameDisplayText(height int) string {
+
+	coveredWords := m.getCoveredWords(m.selectedDifficulty)
+	displayedText := m.uncoveredText
+	if m.uncoveredText != "" {
+		displayedText += " "
+	}
+
+	displayedText += lipgloss.NewStyle().Foreground(lipgloss.Color("#999999")).Render(coveredWords)
+	styledDisplayText := lipgloss.NewStyle().Height(height).Render(displayedText)
+	return styledDisplayText
+}
+
 func (m model) gameScreen() string {
 	remainingHeight := totalHeight
 
@@ -147,21 +201,8 @@ func (m model) gameScreen() string {
 	helpText := "(esc to cancel)"
 	styledHelpText := lipgloss.NewStyle().Height(helpTextHeight).Render(helpText)
 
-	var remainingWordBlanks []string
-	for _, word := range m.remainingWords {
-		length := utf8.RuneCountInString(word)
-		blank := strings.Repeat("_", length)
-		remainingWordBlanks = append(remainingWordBlanks, blank)
-	}
-	coveredWords := strings.Join(remainingWordBlanks, " ")
 	paragraphHeight := remainingHeight
-	displayedText := m.uncoveredText
-	if m.uncoveredText != "" {
-		displayedText += " "
-	}
-
-	displayedText += lipgloss.NewStyle().Foreground(lipgloss.Color("#999999")).Render(coveredWords)
-	styledDisplayText := lipgloss.NewStyle().Height(paragraphHeight).Render(displayedText)
+	styledDisplayText := m.getGameDisplayText(paragraphHeight)
 	remainingHeight -= paragraphHeight
 	return lipgloss.JoinVertical(lipgloss.Left,
 		styledDisplayText,

@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"log"
 	"regexp"
 	"strings"
 
@@ -12,6 +11,7 @@ type model struct {
 	textInput          textinput.Model
 	textComplete       bool
 	isPlayingGame      bool
+	selectedDifficulty int
 	memorizeItems      []memorizeItem
 	uncoveredText      string
 	remainingWords     []string
@@ -27,9 +27,10 @@ func InitialModel() model {
 	ti.CharLimit = 156
 	ti.Width = 20
 	return model{
-		textInput:     ti,
-		isPlayingGame: false,
-		err:           nil,
+		textInput: ti,
+		selectedDifficulty: 3,
+		isPlayingGame:      false,
+		err:                nil,
 	}
 }
 
