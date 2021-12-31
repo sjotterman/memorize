@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"strings"
+	"regexp"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -35,7 +35,8 @@ func (m *model) handleClearInputMsg() {
 func (m *model) handleStartGameMsg(msg startGameMsg) {
 	m.textInput.Reset()
 	m.uncoveredText = ""
-	m.remainingWords = strings.Split(msg.text, " ")
+	re := regexp.MustCompile(`[\s]+`)
+	m.remainingWords = re.Split(msg.text, -1)
 	m.isPlayingGame = true
 	m.textComplete = false
 }
