@@ -8,16 +8,17 @@ import (
 )
 
 type model struct {
-	textInput          textinput.Model
-	textComplete       bool
-	selectedDifficulty gameDifficulty
-	currentScreen      gameScreen
-	memorizeItems      []memorizeItem
-	uncoveredText      string
-	remainingWords     []string
-	typed              string
-	isTypedWordCorrect bool
-	err                error
+	textInput           textinput.Model
+	textComplete        bool
+	selectedDifficulty  gameDifficulty
+	currentScreen       gameScreen
+	memorizeItems       []memorizeItem
+	currentMemorizeItem memorizeItem
+	uncoveredText       string
+	remainingWords      []string
+	typed               string
+	isTypedWordCorrect  bool
+	err                 error
 }
 
 func InitialModel() model {
@@ -27,7 +28,7 @@ func InitialModel() model {
 	ti.CharLimit = 156
 	ti.Width = 20
 	return model{
-		textInput: ti,
+		textInput:          ti,
 		selectedDifficulty: difficultyHard,
 		currentScreen:      selectionScreen,
 		err:                nil,

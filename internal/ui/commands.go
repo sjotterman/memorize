@@ -10,9 +10,9 @@ import (
 )
 
 func (m model) startGameCmd(gameIndex int) tea.Cmd {
-	newText := m.memorizeItems[gameIndex].Text
+	selectedItem := m.memorizeItems[gameIndex]
 	return func() tea.Msg {
-		return startGameMsg{text: newText}
+		return startGameMsg{selectedItem}
 	}
 }
 

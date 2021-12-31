@@ -10,9 +10,6 @@ import (
 type tickMsg struct{}
 type errMsg error
 type checkWord struct{}
-type startGameMsg struct {
-	text string
-}
 type clearInputMsg struct{}
 type showGameSelectorMsg struct{}
 type showDifficultySelectorMsg struct{}
@@ -21,6 +18,10 @@ type invalidSelectionErrorMsg struct{}
 type memorizeItem struct {
 	Title string `json:"title"`
 	Text  string `json:"text"`
+}
+
+type startGameMsg struct {
+	item memorizeItem
 }
 
 type textsSuccessfullyLoadedMsg struct {
@@ -103,10 +104,11 @@ func (m *model) handleErrorLoadingTextsMsg(msg errorLoadingTextsMsg) {
 }
 
 func (m *model) handleStartGameMsg(msg startGameMsg) {
+	m.currentMemorizeItem = msg.item
 	m.textInput.Reset()
 	m.uncoveredText = ""
 	re := regexp.MustCompile(`[\s]+`)
-	m.remainingWords = re.Split(msg.text, -1)
+	m.remainingWords = re.Split(msg.item.Text, -1)
 	m.currentScreen = gameplayScreen
 	m.textComplete = false
 }

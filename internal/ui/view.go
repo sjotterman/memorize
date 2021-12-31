@@ -229,6 +229,10 @@ func (m model) getGameDisplayText(height int) string {
 func (m model) gameScreen() string {
 	remainingHeight := totalHeight
 
+	titleHeight := 2
+	remainingHeight -= titleHeight
+	styledTitle := lipgloss.NewStyle().Height(titleHeight).Render(m.currentMemorizeItem.Title)
+
 	statusMsgHeight := 1
 	styledStatusMsg := m.getGameStatusMsg(statusMsgHeight)
 	remainingHeight -= statusMsgHeight
@@ -255,6 +259,7 @@ func (m model) gameScreen() string {
 	styledDisplayText := m.getGameDisplayText(paragraphHeight)
 	remainingHeight -= paragraphHeight
 	return lipgloss.JoinVertical(lipgloss.Left,
+		styledTitle,
 		styledDisplayText,
 		progressBar,
 		styledStatusMsg,
