@@ -16,10 +16,17 @@ type clearInputMsg struct{}
 type showGameSelectorMsg struct{}
 
 type memorizeItem struct {
-	title string
-	text  string
+	Title string `json:"title"`
+	Text  string `json:"text"`
 }
 
+type textsSuccessfullyLoadedMsg struct {
+	Texts []memorizeItem
+}
+
+type errorLoadingTextsMsg struct {
+	error error
+}
 
 
 func (m *model) handleShowGameSelectorMsg() {
@@ -32,6 +39,10 @@ func (m *model) handleClearInputMsg() {
 	m.textInput.Reset()
 }
 
+func (m *model) handleErrorLoadingTextsMsg(msg errorLoadingTextsMsg) {
+	m.err = msg.error
+}
+
 func (m *model) handleStartGameMsg(msg startGameMsg) {
 	m.textInput.Reset()
 	m.uncoveredText = ""
@@ -39,6 +50,10 @@ func (m *model) handleStartGameMsg(msg startGameMsg) {
 	m.remainingWords = re.Split(msg.text, -1)
 	m.isPlayingGame = true
 	m.textComplete = false
+}
+
+func (m *model) handleTextsLoadedMsg(msg textsSuccessfullyLoadedMsg) {
+	m.memorizeItems = msg.Texts
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -72,6 +87,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case showGameSelectorMsg:
 		m.handleShowGameSelectorMsg()
+		return m, nil
+	case textsSuccessfullyLoadedMsg:
+		m.handleTextsLoadedMsg(msg)
+		return m, nil
+	case errorLoadingTextsMsg:
+		m.handleErrorLoadingTextsMsg(msg)
 		return m, nil
 	}
 	m.textInput, cmd = m.textInput.Update(msg)

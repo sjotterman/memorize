@@ -6,5 +6,8 @@ import (
 )
 
 func (m model) Init() tea.Cmd {
-	return textinput.Blink
+	var cmds []tea.Cmd
+	cmds = append(cmds, textinput.Blink)
+	cmds = append(cmds, m.loadTextsCmd())
+	return tea.Batch(cmds...)
 }

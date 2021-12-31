@@ -8,27 +8,6 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 )
 
-var memorizeItems []memorizeItem = []memorizeItem{
-	{
-		title: "Opening, The Crisis",
-		text:  "These are the times that try men's souls.",
-	},
-	{
-		title: "Hitchhiker's Guide Cover Text",
-		text:  "Don't Panic",
-	},
-	{
-		title: "Litany against fear",
-		text: `I must not fear.
-Fear is the mind-killer.
-Fear is the little-death that brings total obliteration.
-I will face my fear.
-I will permit it to pass over me and through me.
-And when it has gone past, I will turn the inner eye to see its path.
-Where the fear has gone there will be nothing. Only I will remain.`,
-	},
-}
-
 type model struct {
 	textInput          textinput.Model
 	textComplete       bool
@@ -51,7 +30,6 @@ func InitialModel() model {
 		textInput:     ti,
 		isPlayingGame: false,
 		err:           nil,
-		memorizeItems: memorizeItems,
 	}
 }
 

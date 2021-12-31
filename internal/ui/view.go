@@ -13,13 +13,37 @@ import (
 const totalHeight = 30
 const totalWidth = 65
 
+func (m model) getSelectorTitle(height int) string {
+	titleText := "Select a text"
+	styledTitleText := lipgloss.NewStyle().Height(height).Render(titleText)
+	if m.err != nil {
+		styledTitleText = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#FF0000")).
+			Height(height).Render("Error!")
+	}
+	return styledTitleText
+}
+
+func (m model) getSelectorDisplayText(height int) string {
+	if m.err != nil {
+		errorText := fmt.Sprintf("%v", m.err)
+		styledErrorText := lipgloss.NewStyle().Height(height).Render(errorText)
+		return styledErrorText
+	}
+	mainDisplayText := ""
+	for index, item := range m.memorizeItems {
+		mainDisplayText += fmt.Sprintf("%v. %v\n", index, item.Title)
+	}
+	styledListText := lipgloss.NewStyle().Height(height).Render(mainDisplayText)
+	return styledListText
+}
+
 func (m model) gameSelector() string {
 	remainingHeight := totalHeight
 
 	titleTextHeight := 2
 	remainingHeight -= titleTextHeight
-	titleText := "Select a text"
-	styledTitleText := lipgloss.NewStyle().Height(titleTextHeight).Render(titleText)
+	styledTitleText := m.getSelectorTitle(titleTextHeight)
 
 	textInputHeight := 1
 	remainingHeight -= textInputHeight
@@ -30,16 +54,12 @@ func (m model) gameSelector() string {
 	helpText := "(esc to quit)"
 	styledHelpText := lipgloss.NewStyle().Height(helpTextHeight).Render(helpText)
 
-	listText := ""
-	for index, item := range m.memorizeItems {
-		listText += fmt.Sprintf("%v. %v\n", index, item.title)
-	}
 	listTextHeight := remainingHeight
-	styledListText := lipgloss.NewStyle().Height(listTextHeight).Render(listText)
 
+	mainDisplayText := m.getSelectorDisplayText(listTextHeight)
 	return lipgloss.JoinVertical(lipgloss.Left,
 		styledTitleText,
-		styledListText,
+		mainDisplayText,
 		styledTextInput,
 		styledHelpText)
 }
