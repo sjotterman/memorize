@@ -2,14 +2,16 @@ package ui
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"unicode/utf8"
 
+	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/lipgloss"
 )
 
 const totalHeight = 30
-const totalWidth = 60
+const totalWidth = 65
 
 func (m model) gameSelector() string {
 	remainingHeight := totalHeight
@@ -43,13 +45,15 @@ func (m model) gameSelector() string {
 }
 
 func (m model) showTypedWord() string {
+	if len(m.remainingWords) <= 0 {
+		return ""
+	}
 	if m.typed == "" {
 		return ""
 	}
 	if m.isTypedWordCorrect {
 		correctStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#00FF00"))
 		checkmark := correctStyle.Render("✓")
-
 		return checkmark + " " + m.typed
 	}
 	incorrectStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#FF0000"))
@@ -57,14 +61,52 @@ func (m model) showTypedWord() string {
 	return redX + " " + m.typed
 }
 
+func (m model) numTypedWords() int {
+	re := regexp.MustCompile(`[\s]+`)
+	// m.remainingWords = re.Split(msg.text, -1)
+	progressWords := re.Split(m.uncoveredText, -1)
+	typedWordCount := len(progressWords) - 1
+	return typedWordCount
+}
+
+func (m model) numTotalWords() int {
+	typedWordCount := m.numTypedWords()
+	totalWordCount := typedWordCount + len(m.remainingWords)
+	return totalWordCount
+}
+
+func (m model) fractionComplete() float64 {
+	typedWordCount := m.numTypedWords()
+	totalWordCount := m.numTotalWords()
+	fractionComplete := float64(typedWordCount) / float64(totalWordCount)
+	return fractionComplete
+}
+
+func (m model) getProgressBar(height int) string {
+	fractionComplete := m.fractionComplete()
+	progressBarModel := progress.NewModel(progress.WithDefaultScaledGradient())
+	if fractionComplete == 1.0 {
+		progressBarModel = progress.NewModel(progress.WithSolidFill("#00FF00"))
+	}
+	progressBarModel.Width = totalWidth
+	progressBar := progressBarModel.ViewAs(fractionComplete)
+	return progressBar
+}
+
+func (m model) getGameStatusMsg(statusMsgHeight int) string {
+	statusMsg := fmt.Sprintf("%v/%v words", m.numTypedWords(), m.numTotalWords())
+	if len(m.remainingWords) == 0 {
+		statusMsg = "Complete! Press s to select another text."
+	}
+	styledStatusMsg := lipgloss.NewStyle().Height(statusMsgHeight).Render(statusMsg)
+	return styledStatusMsg
+}
+
 func (m model) gameScreen() string {
 	remainingHeight := totalHeight
-	statusMsg := fmt.Sprintf("%v words remaining", len(m.remainingWords))
-	if len(m.remainingWords) == 0 {
-		statusMsg = "Complete! Press s to select text."
-	}
+
 	statusMsgHeight := 1
-	styledStatusMsg := lipgloss.NewStyle().Height(statusMsgHeight).Render(statusMsg)
+	styledStatusMsg := m.getGameStatusMsg(statusMsgHeight)
 	remainingHeight -= statusMsgHeight
 
 	typedWord := m.showTypedWord()
@@ -75,6 +117,10 @@ func (m model) gameScreen() string {
 	textInputHeight := 1
 	remainingHeight -= textInputHeight
 	styledTextInput := lipgloss.NewStyle().Height(textInputHeight).Render(m.textInput.View())
+
+	progressBarHeight := 2
+	remainingHeight -= progressBarHeight
+	progressBar := m.getProgressBar(progressBarHeight)
 
 	helpTextHeight := 1
 	remainingHeight -= helpTextHeight
@@ -99,6 +145,7 @@ func (m model) gameScreen() string {
 	remainingHeight -= paragraphHeight
 	return lipgloss.JoinVertical(lipgloss.Left,
 		styledDisplayText,
+		progressBar,
 		styledStatusMsg,
 		styledTypedWord,
 		styledTextInput,
