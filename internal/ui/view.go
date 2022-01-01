@@ -205,9 +205,15 @@ func getWordBlank(word string, difficulty gameDifficulty) string {
 
 func (m model) getCoveredWords(difficulty gameDifficulty) string {
 	var remainingWordBlanks []string
-	for _, word := range m.remainingWords {
+	for index, word := range m.remainingWords {
 		blank := getWordBlank(word, difficulty)
-		remainingWordBlanks = append(remainingWordBlanks, blank)
+		styledBlank := lipgloss.NewStyle().
+			Foreground(lipgloss.Color(inactiveTextColor)).Render(blank)
+		if index == 0 {
+			styledBlank = lipgloss.NewStyle().
+				Foreground(lipgloss.Color(hintTextColor)).Render(blank)
+		}
+		remainingWordBlanks = append(remainingWordBlanks, styledBlank)
 	}
 	coveredWords := strings.Join(remainingWordBlanks, " ")
 	return coveredWords
@@ -221,7 +227,7 @@ func (m model) getGameDisplayText(height int) string {
 		displayedText += " "
 	}
 
-	displayedText += lipgloss.NewStyle().Foreground(lipgloss.Color("#999999")).Render(coveredWords)
+	displayedText += coveredWords
 	styledDisplayText := lipgloss.NewStyle().Height(height).Render(displayedText)
 	return styledDisplayText
 }

@@ -7,6 +7,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+const (
+	hintTextColor     = "#BB00BB"
+	inactiveTextColor = "#999999"
+)
 type tickMsg struct{}
 type errMsg error
 type checkWord struct{}
