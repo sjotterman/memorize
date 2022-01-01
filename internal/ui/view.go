@@ -210,8 +210,12 @@ func (m model) getCoveredWords(difficulty gameDifficulty) string {
 		styledBlank := lipgloss.NewStyle().
 			Foreground(lipgloss.Color(inactiveTextColor)).Render(blank)
 		if index == 0 {
+			nextWord := blank
+			if m.showHint {
+				nextWord = word
+			}
 			styledBlank = lipgloss.NewStyle().
-				Foreground(lipgloss.Color(hintTextColor)).Render(blank)
+				Foreground(lipgloss.Color(hintTextColor)).Render(nextWord)
 		}
 		remainingWordBlanks = append(remainingWordBlanks, styledBlank)
 	}
@@ -258,7 +262,7 @@ func (m model) gameScreen() string {
 
 	helpTextHeight := 1
 	remainingHeight -= helpTextHeight
-	helpText := "(esc to cancel)"
+	helpText := "(esc to cancel, tab for hint)"
 	styledHelpText := lipgloss.NewStyle().Height(helpTextHeight).Render(helpText)
 
 	paragraphHeight := remainingHeight

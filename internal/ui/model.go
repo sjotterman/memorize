@@ -16,6 +16,7 @@ type tickMsg struct{}
 type errMsg error
 type checkWord struct{}
 type clearInputMsg struct{}
+type showHintMsg struct{}
 type showGameSelectorMsg struct{}
 type showDifficultySelectorMsg struct{}
 type invalidSelectionErrorMsg struct{}
@@ -75,6 +76,7 @@ const (
 type model struct {
 	textInput           textinput.Model
 	textComplete        bool
+	showHint            bool
 	selectedDifficulty  gameDifficulty
 	currentScreen       gameScreen
 	memorizeItems       []memorizeItem
@@ -98,6 +100,7 @@ func InitialModel(difficulty int) model {
 	ti.Width = 20
 	return model{
 		textInput:          ti,
+		showHint:           false,
 		selectedDifficulty: selectedDifficulty,
 		currentScreen:      selectionScreen,
 		err:                nil,
@@ -117,6 +120,7 @@ func (m *model) checkTypedText() {
 		m.isTypedWordCorrect = true
 		m.uncoveredText = m.uncoveredText + " " + m.remainingWords[0]
 		m.remainingWords = m.remainingWords[1:]
+		m.showHint = false
 	} else {
 		m.isTypedWordCorrect = false
 	}

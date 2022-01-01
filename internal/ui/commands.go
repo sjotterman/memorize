@@ -47,6 +47,10 @@ func (m *model) enterPressedCmd(enteredText string) tea.Cmd {
 	return m.startGameCmd(enteredNumber)
 }
 
+func (m *model) handleShowHintCmd() tea.Msg {
+	return showHintMsg{}
+}
+
 func (m *model) loadTextsCmd() tea.Cmd {
 	plan, err := ioutil.ReadFile("memorize-texts.json")
 	if err != nil {

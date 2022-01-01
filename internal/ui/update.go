@@ -67,6 +67,10 @@ func (m *model) handleTextsLoadedMsg(msg textsSuccessfullyLoadedMsg) {
 	m.memorizeItems = msg.Texts
 }
 
+func (m *model) handleShowHintMsg() {
+	m.showHint = true
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
@@ -80,6 +84,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.currentScreen == selectionScreen && msg.String() == "d" {
 			return m, m.handlePressDCmd()
+		}
+		if m.currentScreen == gameplayScreen && msg.Type == tea.KeyTab {
+			return m, m.handleShowHintCmd
 		}
 		switch msg.Type {
 		case tea.KeyEsc:
@@ -98,6 +105,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case clearInputMsg:
 		m.handleClearInputMsg()
+		return m, nil
+	case showHintMsg:
+		m.handleShowHintMsg()
 		return m, nil
 	case showGameSelectorMsg:
 		m.handleShowGameSelectorMsg()
