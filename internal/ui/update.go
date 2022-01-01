@@ -7,69 +7,15 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-const (
-	hintTextColor     = "#BB00BB"
-	inactiveTextColor = "#999999"
-)
-type tickMsg struct{}
-type errMsg error
-type checkWord struct{}
-type clearInputMsg struct{}
-type showGameSelectorMsg struct{}
-type showDifficultySelectorMsg struct{}
-type invalidSelectionErrorMsg struct{}
+// TODO: place these in the model
 
-type memorizeItem struct {
-	Title string `json:"title"`
-	Text  string `json:"text"`
-}
-
-type startGameMsg struct {
-	item memorizeItem
-}
-
-type textsSuccessfullyLoadedMsg struct {
-	Texts []memorizeItem
-}
-
-type errorLoadingTextsMsg struct {
-	error error
-}
-
-type gameDifficulty int
-
-const (
-	difficultyLearning gameDifficulty = iota
-	difficultyEasy
-	difficultyMedium
-	difficultyHard
-)
-
-type selectDifficultyMsg struct {
-	difficulty gameDifficulty
-}
-
-func (s gameDifficulty) String() string {
-	switch s {
-	case difficultyLearning:
-		return "Learning"
-	case difficultyEasy:
-		return "Easy"
-	case difficultyMedium:
-		return "Medium"
-	case difficultyHard:
-		return "Hard"
-	}
-	return "unknown"
-}
-
-type gameScreen int
-
-const (
-	selectionScreen gameScreen = iota
-	gameplayScreen
-	selectDifficultyScreen
-)
+// func (m *Model) handleToggleRead(msg tea.Msg, cmds *[]tea.Cmd) {
+// 	index := m.list.Index()
+// 	newItem := m.items[index]
+// 	newItem.isRead = !newItem.isRead
+// 	m.items[index] = newItem
+// 	*cmds = append(*cmds, m.list.SetItem(index, newItem))
+// }
 
 func (m *model) handleShowGameSelectorMsg() {
 	m.err = nil
