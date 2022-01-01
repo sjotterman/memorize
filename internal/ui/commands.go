@@ -45,7 +45,7 @@ func (m *model) enterPressedCmd(enteredText string) tea.Cmd {
 }
 
 func (m *model) loadTextsCmd() tea.Cmd {
-	plan, err := ioutil.ReadFile("texts.json")
+	plan, err := ioutil.ReadFile("memorize-texts.json")
 	if err != nil {
 		return func() tea.Msg {
 			error := fmt.Errorf("error reading file: %v", err)
