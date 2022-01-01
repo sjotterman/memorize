@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/spf13/viper"
 )
 
 func (m model) startGameCmd(gameIndex int) tea.Cmd {
@@ -30,6 +31,8 @@ func (m *model) enterPressedCmd(enteredText string) tea.Cmd {
 			}
 		}
 		selectedDifficulty := gameDifficulty(enteredNumber)
+		viper.Set("difficulty", int(selectedDifficulty))
+		viper.WriteConfig()
 		return func() tea.Msg {
 			return selectDifficultyMsg{selectedDifficulty}
 		}

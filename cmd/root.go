@@ -41,6 +41,7 @@ var rootCmd = &cobra.Command{
 	Long:  `A simple game to memorize text`,
 	Run: func(cmd *cobra.Command, args []string) {
 		enableLogging := viper.GetBool("enableLogging")
+		difficulty := viper.GetInt("difficulty")
 
 		if enableLogging {
 			f, err := tea.LogToFile("debug.log", "debug")
@@ -57,7 +58,7 @@ var rootCmd = &cobra.Command{
 			}()
 		}
 
-		m := ui.InitialModel()
+		m := ui.InitialModel(difficulty)
 		var opts []tea.ProgramOption
 
 		opts = append(opts, tea.WithAltScreen())
@@ -108,6 +109,7 @@ func initConfig() {
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".memorize")
 	}
+	viper.SetDefault("difficulty", 3)
 
 	viper.AutomaticEnv() // read in environment variables that match
 

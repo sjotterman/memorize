@@ -86,7 +86,11 @@ type model struct {
 	err                 error
 }
 
-func InitialModel() model {
+func InitialModel(difficulty int) model {
+	selectedDifficulty := gameDifficulty(difficulty)
+	if selectedDifficulty.String() == "unknown" {
+		selectedDifficulty = difficultyMedium
+	}
 	ti := textinput.NewModel()
 	ti.Placeholder = "Start typing"
 	ti.Focus()
@@ -94,7 +98,7 @@ func InitialModel() model {
 	ti.Width = 20
 	return model{
 		textInput:          ti,
-		selectedDifficulty: difficultyHard,
+		selectedDifficulty: selectedDifficulty,
 		currentScreen:      selectionScreen,
 		err:                nil,
 	}

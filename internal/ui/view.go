@@ -15,8 +15,8 @@ const totalHeight = 30
 const totalWidth = 65
 
 func (m model) getSelectorTitle(height int) string {
-	titleText := "Select a text\n"
-	titleText = fmt.Sprintf("%v\nSelected difficulty: %v", titleText, m.selectedDifficulty)
+	selectTextMsg := "Select a text:"
+	titleText := fmt.Sprintf("Selected difficulty: %v\n\n%v", m.selectedDifficulty, selectTextMsg)
 	styledTitleText := lipgloss.NewStyle().Height(height).Render(titleText)
 	if m.err != nil {
 		styledTitleText = lipgloss.NewStyle().
