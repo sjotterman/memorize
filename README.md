@@ -5,6 +5,24 @@ Memorize (better name pending) is a simple app that helps you memorize texts by 
 
 # How to Use
 
+## Set up source texts
+For now, source texts are stored in a file called memorize-texts.json that must be in the same directory as the executable. The file contains an array of objects with the required keys "title" and "text." For example:
+
+```json
+[
+  {
+    "title": "Hitchhiker's Guide Cover Text",
+    "text": "Don't panic."
+  },
+  {
+    "title": "Bill & Ted's Philosophy",
+    "text": "Be excellent to each other."
+  }
+]
+```
+
+To start, you can use the memorize-texts.json file in the root of the repo.
+
 ## Text Selection Screen
 ![Screen Shot 2022-01-01 at 4 40 07 PM](https://user-images.githubusercontent.com/3410540/147860734-1a5b4afc-b8c7-4206-9a92-f5e0d82b538a.png)
 
