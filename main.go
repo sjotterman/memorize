@@ -21,6 +21,8 @@ THE SOFTWARE.
 */
 package main
 
+// TODO: configure location of texts file?
+
 import "github.com/sjotterman/memorize/cmd"
 
 func main() {
