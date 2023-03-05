@@ -60,3 +60,8 @@ Your most recently submitted word will be displayed here, along with a symbol in
 ### Text input
 Type a word and press space to submit. For convenience, punctuation is ignored.
 
+# Dependencies
+
+| Project | Version |
+| ------- | ------- |
+| go.dev  | =1.19.4 |
